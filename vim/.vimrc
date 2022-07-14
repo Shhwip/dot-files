@@ -2,8 +2,8 @@
 "                             vimrc                              "
 "=================================================================
 "=================================================================
-"  Revision  077
-"  Modified  Wednesday, 13 July 2022
+"  Revision  0100
+"  Modified  Thursday, 14 July 2022
 "=================================================================
 set exrc                                " if vimrc in local folder execute it
 set encoding=utf-8                      " The encoding displayed
@@ -284,10 +284,7 @@ else
     set background=dark
 endif
 
-" colorscheme wombat256mod
-" colorscheme default
 silent! colorscheme gruvbox " colorscheme support truecolor
-"highlight Normal guibg=none
 
 
 "=================================================================
