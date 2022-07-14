@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#===============================================================================
+#
+#          FILE: hello.sh
+#
+#         USAGE: ./hello.sh
+#
+#   DESCRIPTION: A template file for bash scripts with a fun help menu
+#
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR:
+#  ORGANIZATION:
+#       CREATED:
+#      REVISION:  ---
+#===============================================================================
+
+# set -o nounset                              # Treat unset variables as an error
+# shopt -s extglob                                # Extended pattern matching
+
+printLine() {
+    numLine=64
+    while [ $numLine -gt 1 ]
+    do
+        printf "*"
+        (( numLine-- ))
+    done
+    printf '\n'
+}
+
+if [[ $1 == "--help" ]]
+then
+    printLine
+    # each of the following strings cannot be longer than 60 char
+    strings=("Welcome to the help menu!"
+    "add options here"
+    ""
+    ""
+    ""
+    ""
+    "Thank you for choosing my Script")
+    printf "* %-60s *\n" "${strings[@]}"
+    printLine
+    exit 0
+fi
+ts=`date`
+echo "Hi $USER $ts"
+
+exit 0
+

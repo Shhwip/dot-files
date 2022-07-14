@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+## a script to start andriod studio from the command line :P
+
+exec $HOME/android-studio/bin/studio.sh

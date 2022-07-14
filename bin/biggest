@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+#===============================================================================
+#
+#          FILE: biggest.sh
+#
+#         USAGE: ./biggest.sh
+#
+#   DESCRIPTION: 
+#
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: 
+#  ORGANIZATION:
+#       CREATED: 10/18/2021 05:22:55 PM
+#      REVISION:  ---
+#===============================================================================
+
+# set -o nounset                              # Treat unset variables as an error
+# shopt -s extglob                                # Extended pattern matching
+
+printLine() {
+    numLine=50
+    while [ $numLine -gt 1 ]
+    do
+        printf "*"
+        (( numLine-- ))
+    done
+    printf '\n'
+}
+
+if [[ $1 == "--help" ]]
+then
+    printLine
+    # each of the following strings cannot be longer than 60 char
+    strings=("Welcome to the help menu!"
+    "This program finds the largest files"
+    "In the subdirectory specified"
+    "Usage: biggest <directory> <number>"
+    "Where number is the number of files returned"
+    "Leave <number> empty for the top 10"
+    "Leave <directory> empty for current directory"
+    "Thank you for choosing my Script")
+    printf "* %-45s *\n" "${strings[@]}"
+    printLine
+    exit 0
+fi
+
+
+
+if [ "$1" == "" ]
+then
+    dir=$PWD
+else
+    dir=$1
+fi
+
+if [ "$2" == "" ]
+then
+    NUM=10
+else
+    NUM=$2
+fi
+
+
+echo "Searching $dir for the $NUM biggest files"
+
+
+du -hax $dir | sort -rh | head -$NUM
+
+
+exit 0
+
