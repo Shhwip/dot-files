@@ -11,7 +11,7 @@
 #      REVISION:  ---
 #===============================================================================
 
-DOTFILES="$HOME/Documents/dotfiles"
+DOTFILES="$HOME/dot-files"
 ts=`date +%y-%m-%d-%H-%M` # timestamp
 backups="$DOTFILES/backups"
 
@@ -114,7 +114,10 @@ NeoVimSetup()
         fi
     fi
     # ill just keep my nvim config over there
+    # TODO: make backup
+    rm -r "$HOME/.config/nvim"
     git clone https://github.com/Shhwip/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
+
 }
 
 #---  FUNCTION  ----------------------------------------------------------------
@@ -330,21 +333,6 @@ main ()
     zshrcSetup
     # 6) NeoVim Setup
     NeoVimSetup
-    echo "Switch default editor to vim?"
-    select yn in y n
-    do
-        case $yn in
-            y )
-                echo "Select the version of vim you would like to be default"
-                select-editor
-                break
-                ;;
-            n )
-                printf "select default editor later by running command 'select-editor'"
-                break
-                ;;
-        esac
-    done
 }	# ----------  end of function main  ----------
 
 # Main Program
