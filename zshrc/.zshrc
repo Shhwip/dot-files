@@ -1,6 +1,9 @@
-# uncomment the next line to get a random bible verse
-# it goes before instant prompt 
-# sqlite3 ~/bible.db "select text from bible where id = ${randomNumber=$(( RANDOM * ( 31104 - 3) / 32767 + 3 ))};"
+# this goes before instant prompt or instant prompt wont let it print
+# get the sqlite file from my bgate-scraper here https://github.com/Shhwip/bgate-scraper
+# rename your favorite tranlsation in ~/.bgate to bible.sql
+IFS='|' read -r book chapter number <<< $(sqlite3 $HOME/.bgate/bible.sql "SELECT book, chapter, number FROM verses GROUP BY book, chapter, number ORDER BY RANDOM() LIMIT 1;" -separator '|')
+echo "$book $chapter:$number"
+sqlite3 $HOME/.bgate/bible.sql "$(printf "SELECT text FROM verses WHERE book='%s' AND chapter=%s AND number=%s ORDER BY part;" "$book" "$chapter" "$number")"
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
