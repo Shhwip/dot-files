@@ -55,7 +55,7 @@ exit 0
 
 #---  FUNCTION  ----------------------------------------------------------------
 #          NAME:  installPackages
-#   DESCRIPTION: Install all required packages using apt or brew
+#   DESCRIPTION: Install all required packages using apt, brew, or pacman
 #    PARAMETERS:  None
 #       RETURNS:  0 on success, 1 if error
 #-------------------------------------------------------------------------------
@@ -80,8 +80,25 @@ installPackages()
             neovim \
             zsh \
             gh
+
+    elif command -v pacman >/dev/null 2>&1; then
+        echo "Using pacman package manager"
         
-        # xclip equivalent for macOS is pbcopy/pbpaste (built-in)
+        if [ `id -u` -ne 0 ]; then
+            echo "You must run with sudo privileges to install packages on Arch"
+            return 1
+        fi
+
+        # Install packages with pacman
+        sudo pacman -Syu --noconfirm
+        sudo pacman -S --needed --noconfirm \
+            base-devel \
+            ripgrep \
+            git \
+            xclip \
+            neovim \
+            zsh \
+            github-cli
         
     elif command -v apt >/dev/null 2>&1; then
         echo "Using apt package manager"
@@ -112,11 +129,10 @@ installPackages()
             zsh \
             gh
     else
-        echo "No supported package manager found (brew or apt)"
+        echo "No supported package manager found (brew, pacman, or apt)"
         return 1
     fi
 }
-
 #---  FUNCTION  ----------------------------------------------------------------
 #          NAME:  VimSetup
 #   DESCRIPTION: Setup Vim Configuration 
@@ -256,23 +272,17 @@ zshrcSetup()
         git clone https://github.com/romkatv/powerlevel10k.git $HOME/.oh-my-zsh/custom/themes/powerlevel10k
     fi
 
-    echo "do you want to configure p10K now?"
-    echo "select n to use saved p10K config"
-    select yn in "y" "n"
-    do
-        case $yn in
-            y )
-                echo "configuring p10K"
-                p10k configure
-                break
-                ;;
-            n )
-                echo "selecting previous p10K configuration"
+    while true; do
+        read -p "do you want to configure p10K now? (y/n) " yn
+        case "${yn:0:1}" in
+            y|Y ) p10k configure; break;;
+            n|N ) echo "Using saved p10k config"
                 ln -s $DOTFILES/zshrc/.p10k.zsh $HOME/.p10k.zsh
-                break
-                ;;
+                break;;
+            * ) echo "Please answer y or n";;
         esac
     done
+
     echo "installing zshell plugins"
     echo "installing syntax highlighting"
     
@@ -301,23 +311,6 @@ zshrcSetup()
 gitSetup()
 {
     echo "$BOLD$RED$0 Starting git setup$RESET"
-    if [[ $(dpkg-query -W -f='${Status}' gh 2>/dev/null | grep -c "ok
-        installed") -eq 1 ]]
-    then
-        echo "gh is installed"
-    else
-        if [ `id -u` -eq 0 ]
-        then
-            echo "gh is not installed"
-            echo "installing gh"
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-            sudo apt update
-            sudo apt install gh
-        else
-            echo "You must install gh with sudo privileges"
-        fi
-    fi
     
     if [ -e "$HOME/.gitconfig" ] || [ -L "$HOME/.gitconfig" ]
     then
@@ -349,21 +342,14 @@ main ()
     then
         help
     fi
-    
-    # 1) Vim Setup
+    installPackages
     VimSetup
-    # 2) Bash Setup
     bashrcSetup
-    # 3) Local bin Setup
     userBinSetup
-    # 4) Git Setup
-    #gitSetup
-    # 5) Zshell Setup
     zshrcSetup
-    # 6) NeoVim Setup
     NeoVimSetup
 }	# ----------  end of function main  ----------
 
 # Main Program
-main $1    #remember to pass all command line args
+main $1
 exit 0
