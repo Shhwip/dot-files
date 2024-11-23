@@ -54,6 +54,70 @@ exit 0
 }
 
 #---  FUNCTION  ----------------------------------------------------------------
+#          NAME:  installPackages
+#   DESCRIPTION: Install all required packages using apt or brew
+#    PARAMETERS:  None
+#       RETURNS:  0 on success, 1 if error
+#-------------------------------------------------------------------------------
+installPackages()
+{
+    # Detect package manager
+    if command -v brew >/dev/null 2>&1; then
+        echo "Using Homebrew package manager"
+        
+        # Install Homebrew if not installed
+        if ! command -v brew >/dev/null 2>&1; then
+            echo "Installing Homebrew..."
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        fi
+        
+        # Install packages with brew
+        brew install \
+            make \
+            gcc \
+            ripgrep \
+            git \
+            neovim \
+            zsh \
+            gh
+        
+        # xclip equivalent for macOS is pbcopy/pbpaste (built-in)
+        
+    elif command -v apt >/dev/null 2>&1; then
+        echo "Using apt package manager"
+        
+        if [ `id -u` -ne 0 ]; then
+            echo "You must run with sudo privileges to install packages on Ubuntu/Debian"
+            return 1
+        fi
+
+        # Add neovim repository
+        sudo add-apt-repository ppa:neovim-ppa/unstable -y
+        
+        # Add github cli repository
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        
+        sudo apt update
+        
+        # Install packages with apt
+        sudo apt install -y \
+            make \
+            gcc \
+            ripgrep \
+            unzip \
+            git \
+            xclip \
+            neovim \
+            zsh \
+            gh
+    else
+        echo "No supported package manager found (brew or apt)"
+        return 1
+    fi
+}
+
+#---  FUNCTION  ----------------------------------------------------------------
 #          NAME:  VimSetup
 #   DESCRIPTION: Setup Vim Configuration 
 #    PARAMETERS:  None
@@ -94,25 +158,6 @@ NeoVimSetup()
 
     echo "$BOLD$RED$0 Starting neovim setup$RESET"
 
-    echo "checking if NeoVim is installed"
-
-    if [[ $(dpkg-query -W -f='${Status}' neovim 2>/dev/null | grep -c "ok
-        installed") -eq 1 ]]
-    then
-        echo "neovim is installed"
-    else
-        if [ `id -u` -eq 0 ]
-        then
-            echo "neovim is not installed"
-            echo "installing neovim"
-            sudo add-apt-repository ppa:neovim-ppa/unstable -y
-            sudo apt update
-            sudo apt install make gcc ripgrep unzip git xclip neovim
-        else
-            echo "You must install neovim with sudo privileges"
-            return 1
-        fi
-    fi
     # ill just keep my nvim config over there
     # TODO: make backup
     rm -r "$HOME/.config/nvim"
@@ -182,22 +227,6 @@ zshrcSetup()
     echo "$BOLD$RED$0 Starting zsh setup$RESET"
     echo "checking if zsh is installed"
 
-    if [[ $(dpkg-query -W -f='${Status}' zsh 2>/dev/null | grep -c "ok
-        installed") -eq 1 ]]
-    then
-        echo "zsh is installed"
-    else
-        if [ `id -u` -eq 0 ]
-        then
-            echo "zshell is not installed"
-            echo "installing zsh"
-            sudo apt install zsh
-        else
-            echo "You must install zshell with sudo privileges"
-            return 1
-        fi
-    fi
-
     if [ -L "$HOME/.zshrc" ] || [ -e "$HOME/.zshrc" ]
     then
         echo ".zshrc exists. Creating a backup and deleting."
@@ -213,7 +242,7 @@ zshrcSetup()
         echo "oh my zsh is already installed"
     else
         echo "installing oh my zsh"
-        sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
     fi
     
     if [ -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" ]
