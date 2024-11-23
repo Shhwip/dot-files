@@ -81,22 +81,6 @@ VimSetup()
 
     echo "creating new .vim folder"
     ln -s $DOTFILES/vim/vim $HOME/.vim
-
-    echo "Switch default editor to vim?"
-    select yn in y n
-    do
-        case $yn in
-            y )
-                echo "Select the version of vim you would like to be default"
-                select-editor
-                break
-                ;;
-            n )
-                printf "select default editor later by running command 'select-editor'"
-                break
-                ;;
-        esac
-    done
 }
 
 #---  FUNCTION  ----------------------------------------------------------------
@@ -121,31 +105,16 @@ NeoVimSetup()
         then
             echo "neovim is not installed"
             echo "installing neovim"
-            sudo apt install neovim
+            sudo add-apt-repository ppa:neovim-ppa/unstable -y
+            sudo apt update
+            sudo apt install make gcc ripgrep unzip git xclip neovim
         else
             echo "You must install neovim with sudo privileges"
             return 1
         fi
     fi
-
-    neovimfolder="~/.config/nvim"
-# By creating a new plugins file we can use different plugins
-# for vim and neovim
-# im sure that you'll show us a better way to do this later
-    if [ -L "$neovimfolder/init.vim" ]|| [ -e "$neovimfolder/init.vim" ]
-    then
-        echo "neovim init.vim file already exists"
-        echo "creating backup of neovim init.vim file"
-        cp neovimConfigFile $backups/neoViminit.vim
-        echo "deleting $neovimConfigFile"
-        rm $neovimConfigFile
-    fi
-
-    ln -s $DOTFILES/neovim/init.vim $HOME/.config/nvim/init.vim
-    ln -s $DOTFILES/neovim/.nvim $HOME/.config/nvim/.nvim
-
-
-
+    # ill just keep my nvim config over there
+    git clone https://github.com/Shhwip/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
 }
 
 #---  FUNCTION  ----------------------------------------------------------------
@@ -194,20 +163,6 @@ bashrcSetup()
         cp $HOME/.bash_aliases $backups/.bash_aliases
         rm $HOME/.bash_aliases
     fi
-
-    echo "Downloading Bash-it"
-    if [ -e "$HOME/.bash_it" ] || [ -L "$HOME/.bash_it" ]
-    then
-        echo ".bash_it folder exists. Creating a backup and deleting."
-        cp -r $HOME/.bash_it $DOTFILES/backups/.bash_it
-        2>/dev/null 1>&2 ~/.bash_it/uninstall.sh &
-        2>/dev/null 1>&2 rm -rf $HOME/.bash_it
-    fi
-    git clone --depth=1 https://github.com/Bash-it/bash-it.git ~/.bash_it
-    # installing while
-    # preventing it from overriding our bashrc file
-    ~/.bash_it/install.sh --no-modify-config
-    echo "bash_it installed"
     ln -s $DOTFILES/bashrc/.bashrc $HOME/.bashrc
     ln -s $DOTFILES/bashrc/.bash_aliases $HOME/.bash_aliases
     source $HOME/.bashrc
@@ -341,41 +296,6 @@ gitSetup()
     ln -s $DOTFILES/git/.gitconfig $HOME/.gitconfig
 }
 #---  FUNCTION  ----------------------------------------------------------------
-#          NAME:  tmuxSetup
-#   DESCRIPTION:  Setup tmux Configuration 
-#    PARAMETERS:  None
-#       RETURNS:  None
-#-------------------------------------------------------------------------------
-tmuxSetup()
-{
-    echo "$BOLD$RED$0 Starting tmux setup$RESET"
-    if [[ $(dpkg-query -W -f='${Status}' tmux 2>/dev/null | grep -c "ok
-        installed") -eq 1 ]]
-    then
-        echo "tmux is installed"
-    else
-        if [ `id -u` -eq 0 ]
-        then
-            echo "tmux is not installed"
-            echo "installing tmux"
-            sudo apt install tmux
-        else
-            echo "You must install tmux with sudo privileges"
-            return 1
-        fi
-    fi
-
-    if [ -e "$HOME/.tmux.conf" ] || [ -L "$HOME/.tmux.conf" ]
-    then
-        echo ".tmux.conf exists. Creating a backup and deleting."
-        cp $HOME/.tmux.conf $backups/.tmux.conf
-        rm $HOME/.tmux.conf
-    fi
-    echo "linking tmux config file"
-    ln -s $DOTFILES/tmux/.tmux.conf $HOME/.tmux.conf
-
-}
-#---  FUNCTION  ----------------------------------------------------------------
 #          NAME:  main
 #   DESCRIPTION:  This is the main driver function.
 #    PARAMETERS:  Optional parameters: --help
@@ -409,12 +329,22 @@ main ()
     # 5) Zshell Setup
     zshrcSetup
     # 6) NeoVim Setup
-    # TODO This needs work
-    # NeoVimSetup
-    # 7) Tmux Setup
-    # idk if I even want to use tmux :P
-    # tmuxSetup
-
+    NeoVimSetup
+    echo "Switch default editor to vim?"
+    select yn in y n
+    do
+        case $yn in
+            y )
+                echo "Select the version of vim you would like to be default"
+                select-editor
+                break
+                ;;
+            n )
+                printf "select default editor later by running command 'select-editor'"
+                break
+                ;;
+        esac
+    done
 }	# ----------  end of function main  ----------
 
 # Main Program
