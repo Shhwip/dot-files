@@ -1,20 +1,8 @@
 #!/usr/bin/env bash
 #===============================================================================
-#
 #          FILE: biggest.sh
-#
 #         USAGE: ./biggest.sh
-#
-#   DESCRIPTION: 
-#
-#       OPTIONS: ---
-#  REQUIREMENTS: ---
-#          BUGS: ---
-#         NOTES: ---
-#        AUTHOR: 
-#  ORGANIZATION:
 #       CREATED: 10/18/2021 05:22:55 PM
-#      REVISION:  ---
 #===============================================================================
 
 # set -o nounset                              # Treat unset variables as an error
@@ -40,8 +28,7 @@ then
     "Usage: biggest <directory> <number>"
     "Where number is the number of files returned"
     "Leave <number> empty for the top 10"
-    "Leave <directory> empty for current directory"
-    "Thank you for choosing my Script")
+    "Leave <directory> empty for current directory")
     printf "* %-45s *\n" "${strings[@]}"
     printLine
     exit 0
@@ -66,9 +53,7 @@ fi
 
 echo "Searching $dir for the $NUM biggest files"
 
-
-du -hax $dir | sort -rh | head -$NUM
-
+find "$dir" -type f -exec du -ha {} + | sort -rh | head -n $NUM
 
 exit 0
 
