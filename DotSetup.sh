@@ -328,7 +328,7 @@ main ()
     # 3) Local bin Setup
     userBinSetup
     # 4) Git Setup
-    gitSetup
+    #gitSetup
     # 5) Zshell Setup
     zshrcSetup
     # 6) NeoVim Setup
